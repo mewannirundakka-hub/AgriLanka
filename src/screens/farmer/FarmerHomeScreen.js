@@ -12,9 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Header from '../../components/common/Header';
 import StatCard from '../../components/common/StatCard';
-import CropCard from '../../components/common/CropCard';
 import { COLORS } from '../../utils/colors';
-import { sampleCrops } from '../../data/sampleData';
 
 // Mock data for crop price ranges (replace with API call)
 const cropPriceData = [
@@ -156,6 +154,46 @@ const cropPriceData = [
   },
 ];
 
+// Sample farmer listings (your actual crop listings)
+const sampleFarmerListings = [
+  {
+    id: 1,
+    crop: 'Tomatoes',
+    quantity: 500,
+    price: 75,
+    location: 'Kandy District',
+    harvestDate: '2026-01-28',
+    postedDate: 'Jan 15, 2026',
+    status: 'active',
+    views: 24,
+    interested: 5,
+  },
+  {
+    id: 2,
+    crop: 'Rice',
+    quantity: 1000,
+    price: 105,
+    location: 'Anuradhapura',
+    harvestDate: '2026-02-05',
+    postedDate: 'Jan 18, 2026',
+    status: 'active',
+    views: 42,
+    interested: 8,
+  },
+  {
+    id: 3,
+    crop: 'Onions',
+    quantity: 300,
+    price: 115,
+    location: 'Nuwara Eliya',
+    harvestDate: '2026-01-30',
+    postedDate: 'Jan 20, 2026',
+    status: 'active',
+    views: 18,
+    interested: 3,
+  },
+];
+
 // Component for displaying crop price cards
 const PriceListingCard = ({ crop, onPress }) => {
   const getTrendIcon = () => {
@@ -192,10 +230,54 @@ const PriceListingCard = ({ crop, onPress }) => {
   );
 };
 
+// Component for displaying farmer's crop listing cards
+const MyListingCard = ({ listing, onPress }) => {
+  return (
+      <TouchableOpacity
+          style={styles.myListingCard}
+          onPress={() => onPress(listing)}
+          activeOpacity={0.7}
+      >
+        <View style={styles.listingCardHeader}>
+          <Text style={styles.listingCropName}>{listing.crop}</Text>
+          <View style={styles.listingStatusBadge}>
+            <View style={styles.statusDot} />
+            <Text style={styles.listingStatusText}>Active</Text>
+          </View>
+        </View>
+
+        <View style={styles.listingDetailsRow}>
+          <View style={styles.listingDetail}>
+            <Ionicons name="cube-outline" size={16} color={COLORS.common.gray600} />
+            <Text style={styles.listingDetailText}>{listing.quantity} kg</Text>
+          </View>
+          <View style={styles.listingDetail}>
+            <Ionicons name="cash-outline" size={16} color={COLORS.common.gray600} />
+            <Text style={styles.listingDetailText}>Rs. {listing.price}/kg</Text>
+          </View>
+          <View style={styles.listingDetail}>
+            <Ionicons name="location-outline" size={16} color={COLORS.common.gray600} />
+            <Text style={styles.listingDetailText}>{listing.location}</Text>
+          </View>
+        </View>
+
+        <View style={styles.listingFooter}>
+          <View style={styles.listingStats}>
+            <Ionicons name="eye-outline" size={14} color={COLORS.common.gray400} />
+            <Text style={styles.listingStatsText}>{listing.views}</Text>
+            <Ionicons name="heart-outline" size={14} color={COLORS.common.gray400} style={{ marginLeft: 12 }} />
+            <Text style={styles.listingStatsText}>{listing.interested}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={COLORS.common.gray400} />
+        </View>
+      </TouchableOpacity>
+  );
+};
+
 // Modal for viewing all crop prices
 const AllCropPricesModal = ({ visible, onClose, onCropSelect }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterTrend, setFilterTrend] = useState('all'); // all, up, down, stable
+  const [filterTrend, setFilterTrend] = useState('all');
 
   const filteredCrops = cropPriceData.filter(crop => {
     const matchesSearch = crop.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -219,7 +301,6 @@ const AllCropPricesModal = ({ visible, onClose, onCropSelect }) => {
             <View style={{ width: 40 }} />
           </View>
 
-          {/* Search Bar */}
           <View style={styles.searchContainer}>
             <Ionicons name="search" size={20} color={COLORS.common.gray400} />
             <TextInput
@@ -235,52 +316,49 @@ const AllCropPricesModal = ({ visible, onClose, onCropSelect }) => {
             )}
           </View>
 
-          {/* Filter Buttons */}
-          <View style={styles.filterContainer}>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.filterScrollContent}
+          <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.filterContainer}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+          >
+            <TouchableOpacity
+                style={[styles.filterButton, filterTrend === 'all' && styles.filterButtonActive]}
+                onPress={() => setFilterTrend('all')}
             >
-              <TouchableOpacity
-                  style={[styles.filterButton, filterTrend === 'all' && styles.filterButtonActive]}
-                  onPress={() => setFilterTrend('all')}
-              >
-                <Text style={[styles.filterButtonText, filterTrend === 'all' && styles.filterButtonTextActive]}>
-                  All
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                  style={[styles.filterButton, filterTrend === 'up' && styles.filterButtonActive]}
-                  onPress={() => setFilterTrend('up')}
-              >
-                <Ionicons name="trending-up" size={16} color={filterTrend === 'up' ? '#fff' : '#10b981'} />
-                <Text style={[styles.filterButtonText, filterTrend === 'up' && styles.filterButtonTextActive]}>
-                  Rising
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                  style={[styles.filterButton, filterTrend === 'down' && styles.filterButtonActive]}
-                  onPress={() => setFilterTrend('down')}
-              >
-                <Ionicons name="trending-down" size={16} color={filterTrend === 'down' ? '#fff' : '#ef4444'} />
-                <Text style={[styles.filterButtonText, filterTrend === 'down' && styles.filterButtonTextActive]}>
-                  Falling
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                  style={[styles.filterButton, filterTrend === 'stable' && styles.filterButtonActive]}
-                  onPress={() => setFilterTrend('stable')}
-              >
-                <Ionicons name="remove" size={16} color={filterTrend === 'stable' ? '#fff' : '#6b7280'} />
-                <Text style={[styles.filterButtonText, filterTrend === 'stable' && styles.filterButtonTextActive]}>
-                  Stable
-                </Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
+              <Text style={[styles.filterButtonText, filterTrend === 'all' && styles.filterButtonTextActive]}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={[styles.filterButton, filterTrend === 'up' && styles.filterButtonActive]}
+                onPress={() => setFilterTrend('up')}
+            >
+              <Ionicons name="trending-up" size={16} color={filterTrend === 'up' ? '#fff' : '#10b981'} />
+              <Text style={[styles.filterButtonText, filterTrend === 'up' && styles.filterButtonTextActive]}>
+                Rising
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={[styles.filterButton, filterTrend === 'down' && styles.filterButtonActive]}
+                onPress={() => setFilterTrend('down')}
+            >
+              <Ionicons name="trending-down" size={16} color={filterTrend === 'down' ? '#fff' : '#ef4444'} />
+              <Text style={[styles.filterButtonText, filterTrend === 'down' && styles.filterButtonTextActive]}>
+                Falling
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={[styles.filterButton, filterTrend === 'stable' && styles.filterButtonActive]}
+                onPress={() => setFilterTrend('stable')}
+            >
+              <Ionicons name="remove" size={16} color={filterTrend === 'stable' ? '#fff' : '#6b7280'} />
+              <Text style={[styles.filterButtonText, filterTrend === 'stable' && styles.filterButtonTextActive]}>
+                Stable
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
 
-          {/* Crop List */}
           <ScrollView style={styles.fullScreenContent}>
             {filteredCrops.length > 0 ? (
                 filteredCrops.map((crop) => (
@@ -305,12 +383,102 @@ const AllCropPricesModal = ({ visible, onClose, onCropSelect }) => {
   );
 };
 
-// Modal for viewing crop listing details
+// Modal for viewing crop price details (informational only)
+const CropPriceDetailModal = ({ visible, onClose, crop }) => {
+  if (!crop) return null;
+
+  return (
+      <Modal
+          visible={visible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={onClose}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{crop.name} - Market Info</Text>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <Ionicons name="close" size={24} color={COLORS.common.gray600} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
+              <View style={styles.priceRangeBox}>
+                <Text style={styles.priceRangeLabel}>Current Market Range</Text>
+                <Text style={styles.priceRangeValue}>
+                  Rs. {crop.minPrice} - {crop.maxPrice} per {crop.unit}
+                </Text>
+                <Text style={styles.priceRangeAvg}>
+                  Average: Rs. {Math.round((crop.minPrice + crop.maxPrice) / 2)}
+                </Text>
+              </View>
+
+              {crop.priceHistory && (
+                  <View style={styles.priceHistorySection}>
+                    <Text style={styles.priceHistoryTitle}>Last 7 Days Price Trend</Text>
+                    <View style={styles.chartContainer}>
+                      {crop.priceHistory.map((item, index) => {
+                        const maxPriceInHistory = Math.max(...crop.priceHistory.map(h => h.price));
+                        const heightPercent = (item.price / maxPriceInHistory) * 100;
+
+                        return (
+                            <View key={index} style={styles.chartBar}>
+                              <Text style={styles.chartPrice}>Rs. {item.price}</Text>
+                              <View style={styles.barContainer}>
+                                <View
+                                    style={[
+                                      styles.bar,
+                                      {
+                                        height: `${heightPercent}%`,
+                                        backgroundColor: crop.trend === 'up'
+                                            ? '#10b981'
+                                            : crop.trend === 'down'
+                                                ? '#ef4444'
+                                                : '#6b7280'
+                                      }
+                                    ]}
+                                />
+                              </View>
+                              <Text style={styles.chartDay}>{item.day}</Text>
+                            </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+              )}
+
+              <View style={styles.insightBox}>
+                <View style={styles.insightHeader}>
+                  <Ionicons name="bulb" size={20} color={COLORS.farmer.primary} />
+                  <Text style={styles.insightTitle}>Market Insight</Text>
+                </View>
+                <Text style={styles.insightText}>
+                  {crop.trend === 'up' &&
+                      `${crop.name} prices are trending upward. This could be a good time to list your produce.`}
+                  {crop.trend === 'down' &&
+                      `${crop.name} prices are declining. Consider waiting for better market conditions or adjust your pricing.`}
+                  {crop.trend === 'stable' &&
+                      `${crop.name} prices are stable. Consistent demand in the market.`}
+                </Text>
+              </View>
+
+              <TouchableOpacity style={styles.gotItButton} onPress={onClose}>
+                <Text style={styles.gotItButtonText}>Got it</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+  );
+};
+
+// Modal for viewing listing details
 const CropListingDetailModal = ({ visible, onClose, listing }) => {
   if (!listing) return null;
 
   const handleEdit = () => {
-    Alert.alert('Edit Listing', 'Edit functionality coming soon!');
+    Alert.alert('Edit Listing', 'Edit functionality will be implemented next!');
   };
 
   const handleDelete = () => {
@@ -367,24 +535,22 @@ const CropListingDetailModal = ({ visible, onClose, listing }) => {
             </View>
 
             <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-              {/* Status Badge */}
               <View style={styles.statusBadge}>
                 <Ionicons name="checkmark-circle" size={20} color="#10b981" />
                 <Text style={styles.statusText}>Active Listing</Text>
               </View>
 
-              {/* Crop Details */}
               <View style={styles.detailSection}>
                 <Text style={styles.detailLabel}>Crop Type</Text>
                 <Text style={styles.detailValue}>{listing.crop}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <View style={styles.detailSection}>
+                <View style={[styles.detailSection, { flex: 1 }]}>
                   <Text style={styles.detailLabel}>Quantity</Text>
                   <Text style={styles.detailValue}>{listing.quantity} kg</Text>
                 </View>
-                <View style={styles.detailSection}>
+                <View style={[styles.detailSection, { flex: 1 }]}>
                   <Text style={styles.detailLabel}>Price per kg</Text>
                   <Text style={styles.detailValue}>Rs. {listing.price}</Text>
                 </View>
@@ -402,24 +568,22 @@ const CropListingDetailModal = ({ visible, onClose, listing }) => {
 
               <View style={styles.detailSection}>
                 <Text style={styles.detailLabel}>Posted On</Text>
-                <Text style={styles.detailValue}>{listing.postedDate || 'Jan 15, 2026'}</Text>
+                <Text style={styles.detailValue}>{listing.postedDate}</Text>
               </View>
 
-              {/* Stats */}
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
                   <Ionicons name="eye-outline" size={20} color={COLORS.common.gray600} />
                   <Text style={styles.statLabel}>Views</Text>
-                  <Text style={styles.statValue}>24</Text>
+                  <Text style={styles.statValue}>{listing.views}</Text>
                 </View>
                 <View style={styles.statItem}>
                   <Ionicons name="heart-outline" size={20} color={COLORS.common.gray600} />
                   <Text style={styles.statLabel}>Interested</Text>
-                  <Text style={styles.statValue}>5</Text>
+                  <Text style={styles.statValue}>{listing.interested}</Text>
                 </View>
               </View>
 
-              {/* Action Buttons */}
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
                   <Ionicons name="create-outline" size={20} color={COLORS.farmer.primary} />
@@ -442,99 +606,8 @@ const CropListingDetailModal = ({ visible, onClose, listing }) => {
       </Modal>
   );
 };
-const CropPriceDetailModal = ({ visible, onClose, crop }) => {
-  if (!crop) return null;
 
-  return (
-      <Modal
-          visible={visible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={onClose}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{crop.name} - Market Info</Text>
-              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={COLORS.common.gray600} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-              {/* Current Price Range */}
-              <View style={styles.priceRangeBox}>
-                <Text style={styles.priceRangeLabel}>Current Market Range</Text>
-                <Text style={styles.priceRangeValue}>
-                  Rs. {crop.minPrice} - {crop.maxPrice} per {crop.unit}
-                </Text>
-                <Text style={styles.priceRangeAvg}>
-                  Average: Rs. {Math.round((crop.minPrice + crop.maxPrice) / 2)}
-                </Text>
-              </View>
-
-              {/* Price History Chart */}
-              {crop.priceHistory && (
-                  <View style={styles.priceHistorySection}>
-                    <Text style={styles.priceHistoryTitle}>Last 7 Days Price Trend</Text>
-                    <View style={styles.chartContainer}>
-                      {crop.priceHistory.map((item, index) => {
-                        const maxPriceInHistory = Math.max(...crop.priceHistory.map(h => h.price));
-                        const heightPercent = (item.price / maxPriceInHistory) * 100;
-
-                        return (
-                            <View key={index} style={styles.chartBar}>
-                              <Text style={styles.chartPrice}>Rs. {item.price}</Text>
-                              <View style={styles.barContainer}>
-                                <View
-                                    style={[
-                                      styles.bar,
-                                      {
-                                        height: `${heightPercent}%`,
-                                        backgroundColor: crop.trend === 'up'
-                                            ? '#10b981'
-                                            : crop.trend === 'down'
-                                                ? '#ef4444'
-                                                : '#6b7280'
-                                      }
-                                    ]}
-                                />
-                              </View>
-                              <Text style={styles.chartDay}>{item.day}</Text>
-                            </View>
-                        );
-                      })}
-                    </View>
-                  </View>
-              )}
-
-              {/* Market Insight */}
-              <View style={styles.insightBox}>
-                <View style={styles.insightHeader}>
-                  <Ionicons name="trending-up" size={20} color={COLORS.farmer.primary} />
-                  <Text style={styles.insightTitle}>Market Insight</Text>
-                </View>
-                <Text style={styles.insightText}>
-                  {crop.trend === 'up' &&
-                      `${crop.name} prices are trending upward. This could be a good time to list your produce.`}
-                  {crop.trend === 'down' &&
-                      `${crop.name} prices are declining. Consider waiting for better market conditions or adjust your pricing.`}
-                  {crop.trend === 'stable' &&
-                      `${crop.name} prices are stable. Consistent demand in the market.`}
-                </Text>
-              </View>
-
-              <TouchableOpacity style={styles.gotItButton} onPress={onClose}>
-                <Text style={styles.gotItButtonText}>Got it</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-  );
-};
-
-// Modal for adding new crop listing (full form)
+// Modal for adding new crop listing
 const AddCropModal = ({ visible, onClose }) => {
   const [formData, setFormData] = useState({
     cropType: '',
@@ -777,7 +850,7 @@ const FarmerHomeScreen = () => {
             <StatCard
                 icon="cube-outline"
                 label="Active Listings"
-                value="8"
+                value="3"
                 color={COLORS.farmer.primary}
             />
             <StatCard
@@ -850,10 +923,12 @@ const FarmerHomeScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {sampleCrops.map((crop) => (
-                <TouchableOpacity key={crop.id} onPress={() => handleListingPress(crop)}>
-                  <CropCard crop={crop} showFarmer={false} />
-                </TouchableOpacity>
+            {sampleFarmerListings.map((listing) => (
+                <MyListingCard
+                    key={listing.id}
+                    listing={listing}
+                    onPress={handleListingPress}
+                />
             ))}
           </View>
         </ScrollView>
@@ -864,8 +939,10 @@ const FarmerHomeScreen = () => {
             onClose={() => setShowAllPricesModal(false)}
             onCropSelect={(crop) => {
               setShowAllPricesModal(false);
-              setSelectedCropForInfo(crop);
-              setPriceDetailModalVisible(true);
+              setTimeout(() => {
+                setSelectedCropForInfo(crop);
+                setPriceDetailModalVisible(true);
+              }, 300);
             }}
         />
 
@@ -1005,23 +1082,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.farmer.primary,
   },
-  showMoreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.farmer.primary,
-    gap: 8,
-    marginBottom: 12,
-  },
-  showMoreText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.farmer.primary,
-  },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1035,6 +1095,80 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  // My Listing Card Styles
+  myListingCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  listingCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  listingCropName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.common.gray800,
+  },
+  listingStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10b981' + '10',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+  },
+  listingStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#10b981',
+  },
+  listingDetailsRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 12,
+  },
+  listingDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  listingDetailText: {
+    fontSize: 13,
+    color: COLORS.common.gray600,
+  },
+  listingFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.common.gray100,
+  },
+  listingStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  listingStatsText: {
+    fontSize: 12,
+    color: COLORS.common.gray600,
   },
   // Modal Styles
   modalOverlay: {
@@ -1295,13 +1429,9 @@ const styles = StyleSheet.create({
     color: COLORS.common.gray800,
   },
   filterContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     marginBottom: 16,
     maxHeight: 50,
-  },
-  filterScrollContent: {
-    alignItems: 'center',
-    paddingVertical: 4,
   },
   filterButton: {
     flexDirection: 'row',
@@ -1484,10 +1614,6 @@ const styles = StyleSheet.create({
     padding: 14,
     fontSize: 15,
     color: COLORS.common.gray800,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: 'top',
   },
 });
 
